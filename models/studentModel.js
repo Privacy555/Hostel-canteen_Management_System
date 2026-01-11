@@ -26,7 +26,7 @@ const studentSchema= mongoose.Schema({
     role:{
         type:String,
         required:true,
-        enum:["warden","admin","student"]
+        enum:["Warden","Admin","Student"]
     }
 },{timestamps:true});
 
@@ -41,7 +41,7 @@ studentSchema.pre('save',async function(){
     }
 });
 
-studentSchema.methods.comparePassword= async(userpwd)=>{
+studentSchema.methods.comparePassword= async function(userpwd){
     try{
         const isMatch=await bcrypt.compare(userpwd,this.password);
         return isMatch;

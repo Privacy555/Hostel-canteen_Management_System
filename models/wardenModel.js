@@ -31,14 +31,14 @@ wardenSchema.pre('save',async function(){
     try{
         if(! this.isModified('password')) return;
         const salt= await bcrypt.genSalt(10);
-        const hashedpassword= bcrypt.hash(this.password,salt);
+        const hashedpassword=await bcrypt.hash(this.password,salt);
         this.password=hashedpassword;
     }catch(err){
         throw err;
     }
 });
 
-wardenSchema.methods.comparePassword= async(userpwd)=>{
+wardenSchema.methods.comparePassword= async function(userpwd){
     try{
         const isMatch=await bcrypt.compare(userpwd,this.password);
         return isMatch;

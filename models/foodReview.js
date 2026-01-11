@@ -30,6 +30,8 @@ const reviewSchema=mongoose.Schema({
       "Hygiene issue",
       "tortillas not cooked properly",
       "rice not cooked properly",
+      "stale bread",
+      "vegetable not cooked properly"
     ]
   }],
   counterIssues: [{
@@ -38,7 +40,8 @@ const reviewSchema=mongoose.Schema({
       "Rude staff",
       "No gloves worn",
       "Not serving on time"
-    ]
+    ],
+    default:[]
   }]
 
 },{timestamps:true});

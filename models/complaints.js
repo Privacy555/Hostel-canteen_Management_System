@@ -24,7 +24,7 @@ const complaint= mongoose.Schema({
     required: true,
     trim: true
   }
-});
+},{timestamps:true});
 
 const Complaint= new mongoose.model('Complaint',complaint);
 module.exports=Complaint;
