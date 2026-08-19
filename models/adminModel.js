@@ -1,50 +1,52 @@
-const mongoose=require('mongoose');
-const bcrypt=require('bcrypt');
+const mongoose = require('mongoose');
+const bcrypt = require('bcrypt');
 
-const adminSchema=mongoose.Schema({
-    name:{
-        type:String,
-        required:true,
+const adminSchema = new mongoose.Schema({
+    name: {
+        type: String,
+        required: true,
+        trim: true
     },
-    email:{
-        type:String,
-        required:true,
-        unique:true,
-        lowercase:true
+    email: {
+        type: String,
+        required: true,
+        unique: true,
+        lowercase: true,
+        trim: true
     },
-    role:{
-        type:String,
-        required:true,
-        enum:["Admin", "Mentor", "Student"]
-
+    role: {
+        type: String,
+        required: true,
+        enum: ["Admin", "Warden", "Student"],
+        default: "Admin"
     },
-    password:{
-        type:String,
-        required:true,
-        select:false
+    password: {
+        type: String,
+        required: true,
+        select: false
     }
-},{timestamps:true});
+}, { timestamps: true });
 
-adminSchema.pre('save',async function(){
-    try{
-        if(! this.isModified('password')) return;
-        const salt= await bcrypt.genSalt(10);
-        const hashedpassword=await bcrypt.hash(this.password,salt);
-        this.password=hashedpassword;
-    }catch(err){
+adminSchema.pre('save', async function() {
+    try {
+        if (!this.isModified('password')) return;
+        const salt = await bcrypt.genSalt(10);
+        const hashedpassword = await bcrypt.hash(this.password, salt);
+        this.password = hashedpassword;
+    } catch (err) {
         throw err;
     }
 });
 
-adminSchema.methods.comparePassword= async function(userpwd){
-    try{
-        const isMatch=await bcrypt.compare(userpwd,this.password);
+adminSchema.methods.comparePassword = async function(userpwd) {
+    try {
+        const isMatch = await bcrypt.compare(userpwd, this.password);
         return isMatch;
-    }catch(err){
+    } catch (err) {
         throw err;
     }
-}
+};
 
-const Admin= new mongoose.model("Admin",adminSchema);
+const Admin = mongoose.models.Admin || mongoose.model("Admin", adminSchema);
 
-module.exports=Admin;
+module.exports = Admin;

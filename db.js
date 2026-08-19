@@ -1,18 +1,20 @@
-const mongoose=require('mongoose');
-require('dotenv').config();
-const localdb=process.env.LOCAL_DB
+const mongoose = require('mongoose');
+const path = require('path');
+require('dotenv').config({ path: path.join(__dirname, '.env') });
+
+const localdb = process.env.LOCAL_DB || "mongodb://127.0.0.1:27017/Mess_Management?directConnection=true";
 mongoose.connect(localdb);
 
-const db=mongoose.connection;
+const db = mongoose.connection;
 
-db.on('connected',()=>{
-    console.log("Server is connected to database successfully.");
+db.on('connected', () => {
+  console.log("Server is connected to database successfully.");
 });
-db.on('disconnected',()=>{
-    console.log("Server is disconnected to database.");
+db.on('disconnected', () => {
+  console.log("Server is disconnected from database.");
 });
-db.on('error',(err)=>{
-    console.log(err);
+db.on('error', (err) => {
+  console.error("Database connection error:", err);
 });
 
-module.exports=db;
+module.exports = db;

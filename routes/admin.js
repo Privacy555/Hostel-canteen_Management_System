@@ -1,179 +1,220 @@
+const express = require('express');
+const router = express.Router();
 
-const Warden=require('./../models/wardenModel');
-const FoodReview=require('./../models/foodReview');
-const Complaint=require('./../models/complaints');
-
-const {jwtAuthMiddleware,generateToken}=require('./../middleware/jwt');
-require('dotenv').config();
-
-const express=require('express');
+const Warden = require('./../models/wardenModel');
+const FoodReview = require('./../models/foodReview');
+const Complaint = require('./../models/complaints');
 const Admin = require('../models/adminModel');
-const router=express.Router();
 
-const allowedRole=require('./../middleware/roleMiddleware');
-const { message } = require('prompt');
+const { jwtAuthMiddleware, generateToken } = require('./../middleware/jwt');
+const allowedRole = require('./../middleware/roleMiddleware');
 
-router.post('/login',async(req,res)=>{
-  try{
-    const{email,password}=req.body;
-    const user= await Admin.findOne({email}).select('+password');
-
-    if(!user){
-      return res.status(401).json({error:"Invalid credentials."});
+// Admin Login
+router.post('/login', async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    if (!email || !password) {
+      return res.status(400).json({ error: "Email and password are required." });
     }
 
-    const isMatch= await user.comparePassword(password);
-    if(!isMatch){
-      return res.status(401).json({ error: "Invalid credentials" });
+    const normalizedEmail = String(email).trim().toLowerCase();
+    const user = await Admin.findOne({ email: normalizedEmail }).select('+password');
+
+    if (!user) {
+      return res.status(401).json({ error: "Invalid credentials." });
     }
 
-    const payload={
-      role:user.role,
-      email:user.email
+    const isMatch = await user.comparePassword(String(password).trim());
+    if (!isMatch) {
+      return res.status(401).json({ error: "Invalid credentials." });
     }
 
-    const token= generateToken(payload);
-    res.status(200).json({token});
-  }catch(err){
-    console.log(err);
-    res.status(500).json({error:"Internal server error."});
+    const payload = {
+      role: user.role,
+      email: user.email
+    };
+
+    const token = generateToken(payload);
+    res.status(200).json({
+      token,
+      user: {
+        name: user.name,
+        email: user.email,
+        role: user.role
+      }
+    });
+  } catch (err) {
+    console.error("Admin login error:", err);
+    res.status(500).json({ error: "Internal server error." });
   }
 });
 
+// Admin section welcome
+router.get('/', (req, res) => {
+  res.json({ message: "Welcome to the admin section." });
+});
 
-router.get('/',(req,res)=>{
-  res.json({message:"Welcome to the admin section."});
-})
-
-
-
+// Protected routes (Admin only)
 router.use(jwtAuthMiddleware);
 router.use(allowedRole('Admin'));
 
-/* To store warden's credentials. */
-router.post('/create-warden',async function(req,res){
-    try{
-        const data=req.body;
-        const search=await Warden.findOne({hostel_no:data.hostel_no});
-        if(search){
-            return res.json({message:"Record of warden for that hostel_no is already present in the database."});
-        }
-        const newWarden= new Warden(data);
-        const response=await newWarden.save();
-
-        res.status(201).json({message:"Data created for warden successfully.",response});
-        console.log("Data created for warden successfully.");
-
-    }catch(err){
-        console.log(err);
-        res.status(500).json({err});
-    }
-})
-
-
-router.get('/wardens', async (req, res) => {
+// Register / Create Warden
+router.post('/create-warden', async (req, res) => {
   try {
-    const wardens = await Warden.find();
-    res.status(200).json({ wardens });
+    const { name, email, hostel_no, password } = req.body;
+
+    if (!name || !email || !hostel_no || !password) {
+      return res.status(400).json({ error: "All fields (name, email, hostel_no, password) are required." });
+    }
+
+    const numericHostel = Number(hostel_no);
+    if (isNaN(numericHostel) || numericHostel <= 0) {
+      return res.status(400).json({ error: "Hostel number must be a valid positive number." });
+    }
+
+    const normalizedEmail = String(email).trim().toLowerCase();
+
+    // Check duplicate hostel assignment
+    const existingByHostel = await Warden.findOne({ hostel_no: numericHostel });
+    if (existingByHostel) {
+      return res.status(400).json({ error: `A warden is already assigned to Hostel #${numericHostel}.` });
+    }
+
+    // Check duplicate email
+    const existingByEmail = await Warden.findOne({ email: normalizedEmail });
+    if (existingByEmail) {
+      return res.status(400).json({ error: `A warden with email "${normalizedEmail}" already exists.` });
+    }
+
+    // Force role to 'Warden'
+    const newWarden = new Warden({
+      name: String(name).trim(),
+      email: normalizedEmail,
+      hostel_no: numericHostel,
+      password: String(password).trim(),
+      role: 'Warden'
+    });
+
+    const response = await newWarden.save();
+    console.log(`Warden registered for Hostel #${numericHostel}`);
+    res.status(201).json({
+      message: "Warden account created successfully.",
+      warden: {
+        _id: response._id,
+        name: response.name,
+        email: response.email,
+        hostel_no: response.hostel_no
+      }
+    });
   } catch (err) {
-    res.status(500).json({ error:"Internal server error." });
+    console.error("Error creating warden:", err);
+    if (err.code === 11000) {
+      return res.status(400).json({ error: "Duplicate field value (email or hostel_no already registered)." });
+    }
+    res.status(500).json({ error: err.message || "Internal server error." });
   }
 });
 
-
-
-
-/* to get warden with given hostel_no */
-router.get('/get-warden/:hostel_no',async(req,res)=>{
-    try{
-        const hostel_no=req.params.hostel_no;
-        const dataFromdb=await Warden.findOne({hostel_no});
-        if(!dataFromdb){
-            return res.status(404).json({message:"No warden found with given hostel_no."})
-        }
-        res.status(200).json({dataFromdb});
-        console.log("Warden's data fetched successfully.");
-    }catch(err){
-        console.log(err);
-        res.status(500).json({error:"Internal server error."});
-    }
+// List all wardens
+router.get('/wardens', async (req, res) => {
+  try {
+    const wardens = await Warden.find().sort({ hostel_no: 1 });
+    res.status(200).json({ wardens });
+  } catch (err) {
+    console.error("Error fetching wardens:", err);
+    res.status(500).json({ error: "Internal server error." });
+  }
 });
 
-
-
-router.get('/foodReview',async(req,res)=>{
-    try{
-        const dataFromdb= await FoodReview.find();
-        console.log("Data fetched successfully.");
-        res.status(200).json({dataFromdb});
-    }catch(err){
-        console.log(err);
-        res.status(500).json({err});
+// Get warden by hostel number
+router.get('/get-warden/:hostel_no', async (req, res) => {
+  try {
+    const hostel_no = Number(req.params.hostel_no);
+    if (isNaN(hostel_no)) {
+      return res.status(400).json({ error: "Invalid hostel number parameter." });
     }
+
+    const dataFromdb = await Warden.findOne({ hostel_no });
+    if (!dataFromdb) {
+      return res.status(404).json({ error: `No warden found for Hostel #${hostel_no}.` });
+    }
+    res.status(200).json({ dataFromdb });
+  } catch (err) {
+    console.error("Error fetching warden:", err);
+    res.status(500).json({ error: "Internal server error." });
+  }
 });
 
-router.get('/foodReview/day/:DAY',async(req,res)=>{
-    try{
-        const day=req.params.DAY;
-        const dataFromdb= await FoodReview.find({day});
-        if(!dataFromdb){
-            return res.status(404).json("Data not found for that day.");
-        }
-        res.status(200).json({dataFromdb});
-        console.log("Data fetched succesfully for given day.");
-    }catch(err){
-        console.log(err);
-        res.status(500).json({error:"Internal server error."})
-    }
+// Get all food reviews
+router.get('/foodReview', async (req, res) => {
+  try {
+    const dataFromdb = await FoodReview.find().sort({ createdAt: -1 });
+    res.status(200).json({ dataFromdb });
+  } catch (err) {
+    console.error("Error fetching reviews:", err);
+    res.status(500).json({ error: "Internal server error." });
+  }
 });
 
-
-router.get('/foodReview/meal/:mealType',async(req,res)=>{
-    try{
-        const mealType =req.params.mealType;
-        const dataFromdb= await FoodReview.find({mealType});
-        if(!dataFromdb){
-            return res.status(404).json("Data not found for that day.");
-        }
-        res.status(200).json({dataFromdb});
-        console.log("Data fetched succesfully for given day.");
-    }catch(err){
-        console.log(err);
-        res.status(500).json({error:"Internal server error."})
+// Get food reviews by day
+router.get('/foodReview/day/:DAY', async (req, res) => {
+  try {
+    const day = req.params.DAY;
+    const validDays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+    if (!validDays.includes(day)) {
+      return res.status(400).json({ error: "Invalid day of week parameter." });
     }
+
+    const dataFromdb = await FoodReview.find({ day }).sort({ createdAt: -1 });
+    res.status(200).json({ dataFromdb });
+  } catch (err) {
+    console.error("Error fetching reviews by day:", err);
+    res.status(500).json({ error: "Internal server error." });
+  }
 });
 
+// Get food reviews by mealType
+router.get('/foodReview/meal/:mealType', async (req, res) => {
+  try {
+    const mealType = req.params.mealType;
+    const validMeals = ["Breakfast", "Lunch", "Dinner"];
+    if (!validMeals.includes(mealType)) {
+      return res.status(400).json({ error: "Invalid mealType parameter." });
+    }
 
+    const dataFromdb = await FoodReview.find({ mealType }).sort({ createdAt: -1 });
+    res.status(200).json({ dataFromdb });
+  } catch (err) {
+    console.error("Error fetching reviews by meal:", err);
+    res.status(500).json({ error: "Internal server error." });
+  }
+});
 
-/* To get overall average according to Day */
+// Get overall average ratings grouped by Day
 router.get('/foodReview/average/meal', async (req, res) => {
   try {
-    const result = await FoodReview.aggregate([                                                     //aggregate() = “process data, don’t just fetch”
-      {                                                                                             
-        $group: {                                                                                   //“Group documents before doing any calculation”        
-          _id: "$day",                                                                              //“Group all documents that have the same mealType”, _id defines grouping key, _id is NOT MongoDB document id
-
-          avgTaste: { $avg: "$ratings.taste" },                                                     //$avg = MongoDB average operator, $ratings.taste = take taste value from each document
+    const result = await FoodReview.aggregate([
+      {
+        $group: {
+          _id: "$day",
+          avgTaste: { $avg: "$ratings.taste" },
           avgQuality: { $avg: "$ratings.quality" },
           avgCleanliness: { $avg: "$ratings.cleanliness" },
           avgUtensilHygiene: { $avg: "$ratings.utensilHygiene" },
           avgSeatingCleanliness: { $avg: "$ratings.seatingCleanliness" },
-          avgOverall: { $avg: "$ratings.overall" }                                                  //avgOverall = average of the ratings.overall values in the documents grouped by day.It does not average the other computed averages (avgTaste, avgQuality, etc.). ratings.overall calculates average of all the ratings of that single document.
+          avgOverall: { $avg: "$ratings.overall" }
         }
       }
     ]);
 
-    res.json(result);
+    res.status(200).json(result);
   } catch (err) {
-    console.log(err);
-    res.status(500).json({ error:"Internal server error." });
+    console.error("Error calculating average meal ratings:", err);
+    res.status(500).json({ error: "Internal server error." });
   }
 });
 
-
-
-
-/* To get overall average rating according to mealType and datewise */
+// Get overall average ratings by date and mealType
 router.get('/foodReview/average/date-meal', async (req, res) => {
   try {
     const result = await FoodReview.aggregate([
@@ -183,45 +224,33 @@ router.get('/foodReview/average/date-meal', async (req, res) => {
             date: {
               $dateToString: {
                 format: "%Y-%m-%d",
-                date: "$createdAt"                                                                          //$createdAt → value from each document, $ means → field reference
+                date: "$createdAt"
               }
             },
             mealType: "$mealType"
           },
-          avgOverall: { $avg: "$ratings.overall" }                                                          //avg of : overall ratings (of each student's review) of that meal for that date.
+          avgOverall: { $avg: "$ratings.overall" }
         }
-      }
+      },
+      { $sort: { "_id.date": -1 } }
     ]);
 
     res.status(200).json(result);
-
   } catch (err) {
-    console.error(err);
-    res.status(500).json({
-      message: "Failed to calculate average ratings",
-      error: err.message
-    });
+    console.error("Error calculating date-meal ratings:", err);
+    res.status(500).json({ error: "Internal server error." });
   }
 });
 
+// Get all complaints
+router.get('/complaints', async (req, res) => {
+  try {
+    const dataFromdb = await Complaint.find().sort({ createdAt: -1 });
+    res.status(200).json({ dataFromdb });
+  } catch (err) {
+    console.error("Error fetching complaints:", err);
+    res.status(500).json({ error: "Internal server error." });
+  }
+});
 
-
-router.get('/complaints',async(req,res)=>{
-    try{
-        const dataFromdb= await Complaint.find();
-        if (dataFromdb.length === 0) {                                                            //find() returns [], not null
-          return res.json({ message: "No complaints found." });
-        }
-        res.status(200).json({dataFromdb});
-        console.log('Complaint fetched.');
-    }catch(err){
-        console.log(err);
-        res.status(500).json({error:"Internal server error."});
-    }
-})
-
-
-
-
-
-module.exports=router;
+module.exports = router;

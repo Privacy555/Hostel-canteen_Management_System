@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MessSync - Modern Hostel Mess Management Platform</title>
+  <meta name="description" content="Hostel Mess Management Platform for student feedback, warden oversight, and administration analytics.">
+
+  <!-- Google Fonts: Plus Jakarta Sans & Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- Top App Navigation Header -->
+  <header class="app-header">
+    <div class="header-container">
+      <a href="#" class="brand" id="brand-logo">
+        <div class="brand-icon">🍽</div>
+        <span>MessSync</span>
+      </a>
+
+      <div class="header-user-info hidden" id="header-user-info">
+        <span class="role-pill" id="header-role-badge">Role</span>
+        <span class="user-email-text" id="header-user-name">User</span>
+        <button class="btn btn-secondary btn-sm" id="logout-btn" title="Sign out from platform">
+          <span>↪ Sign Out</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content Wrapper -->
+  <main class="main-wrapper">
+
+    <!-- ==================================================================== -->
+    <!-- VIEW 1: AUTHENTICATION / LOGIN -->
+    <!-- ==================================================================== -->
+    <section id="auth-view" class="auth-hero">
+      <div class="auth-card">
+        <div style="text-align: center; margin-bottom: 1.5rem;">
+          <div style="font-size: 2.25rem; margin-bottom: 0.5rem;">🍲</div>
+          <h1 class="page-title" style="font-size: 1.45rem; margin-bottom: 0.25rem;">Hostel Mess Portal</h1>
+          <p class="page-subtitle" style="font-size: 0.875rem; margin-bottom: 0;">Sign in to your account</p>
+        </div>
+
+        <!-- Role Selector Segmented Tabs -->
+        <div class="role-tabs" role="tablist">
+          <button type="button" class="role-tab-btn active" data-role="Student" id="tab-student" role="tab">Student</button>
+          <button type="button" class="role-tab-btn" data-role="Warden" id="tab-warden" role="tab">Warden</button>
+          <button type="button" class="role-tab-btn" data-role="Admin" id="tab-admin" role="tab">Admin</button>
+        </div>
+
+        <form id="login-form">
+          <!-- Student Roll Number Input -->
+          <div id="auth-student-inputs" class="form-group">
+            <label for="login-roll" class="form-label">Student Roll Number</label>
+            <input type="number" id="login-roll" class="form-control" placeholder="e.g. 101" required>
+          </div>
+
+          <!-- Staff Email Input (Warden & Admin) -->
+          <div id="auth-staff-inputs" class="form-group hidden">
+            <label for="login-email" class="form-label">Official Email Address</label>
+            <input type="email" id="login-email" class="form-control" placeholder="e.g. admin@gmail.com">
+          </div>
+
+          <!-- Password Input -->
+          <div class="form-group">
+            <label for="login-password" class="form-label">Password</label>
+            <input type="password" id="login-password" class="form-control" placeholder="••••••••" required>
+          </div>
+
+          <button type="submit" id="login-submit-btn" class="btn btn-primary" style="width: 100%; margin-top: 0.5rem;">
+            Sign In
+          </button>
+        </form>
+
+        <!-- Quick 1-Click Demo Credentials -->
+        <div class="demo-credentials-box">
+          <div class="demo-title">
+            <span>⚡ Quick Demo Credentials</span>
+          </div>
+          <div class="demo-chips">
+            <button type="button" class="demo-chip" data-role="Student" data-roll="101" data-password="student123">
+              🎓 Student (101)
+            </button>
+            <button type="button" class="demo-chip" data-role="Warden" data-email="warden.h1@hostel.edu" data-password="warden123">
+              🛡 Warden (Hostel 1)
+            </button>
+            <button type="button" class="demo-chip" data-role="Admin" data-email="admin@gmail.com" data-password="Admin@123">
+              👑 System Admin
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================================================================== -->
+    <!-- VIEW 2: STUDENT PORTAL -->
+    <!-- ==================================================================== -->
+    <section id="student-view" class="hidden">
+      <!-- Student Banner -->
+      <div class="profile-banner">
+        <div class="profile-avatar-block">
+          <div class="profile-avatar" id="student-avatar-initial">S</div>
+          <div>
+            <h1 class="profile-name" id="student-name-display">Student Name</h1>
+            <div class="profile-meta-tags">
+              <span class="profile-tag">🎓 Roll: <strong id="student-roll-display">101</strong></span>
+              <span class="profile-tag">🏢 <span id="student-hostel-display">Hostel 1</span></span>
+              <span class="profile-tag">🌍 <span id="student-country-display">India</span></span>
+            </div>
+          </div>
+        </div>
+        <div style="font-size: 0.85rem; background: rgba(255,255,255,0.1); padding: 0.5rem 0.85rem; border-radius: var(--radius-md);">
+          <strong>Mess Timings:</strong> B: 7:30-9:30 AM | L: 12:30-2:30 PM | D: 7:30-9:30 PM
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 1.5rem;">
+        <!-- Food Review Card -->
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">⭐ Daily Food Feedback</h2>
+            <span style="font-size: 0.8rem; color: var(--text-secondary);">6-Dimension Review</span>
+          </div>
+
+          <form id="food-review-form">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+              <div class="form-group" style="margin-bottom: 0;">
+                <label for="review-day" class="form-label">Day of Week</label>
+                <select id="review-day" class="form-control" required>
+                  <option value="Monday">Monday</option>
+                  <option value="Tuesday">Tuesday</option>
+                  <option value="Wednesday">Wednesday</option>
+                  <option value="Thursday">Thursday</option>
+                  <option value="Friday">Friday</option>
+                  <option value="Saturday">Saturday</option>
+                  <option value="Sunday">Sunday</option>
+                </select>
+              </div>
+
+              <div class="form-group" style="margin-bottom: 0;">
+                <label for="review-meal" class="form-label">Meal Type</label>
+                <select id="review-meal" class="form-control" required>
+                  <option value="Breakfast">Breakfast</option>
+                  <option value="Lunch">Lunch</option>
+                  <option value="Dinner">Dinner</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Star Ratings 6 Dimensions -->
+            <div class="ratings-container">
+              <!-- Taste -->
+              <div class="rating-item">
+                <div class="rating-item-header">
+                  <span class="rating-item-label">Taste</span>
+                  <span class="rating-item-val">4 / 5</span>
+                </div>
+                <div class="star-picker" data-dimension="taste">
+                  <button type="button" class="star-btn active" data-value="1">★</button>
+                  <button type="button" class="star-btn active" data-value="2">★</button>
+                  <button type="button" class="star-btn active" data-value="3">★</button>
+                  <button type="button" class="star-btn active" data-value="4">★</button>
+                  <button type="button" class="star-btn" data-value="5">★</button>
+                </div>
+              </div>
+
+              <!-- Quality -->
+              <div class="rating-item">
+                <div class="rating-item-header">
+                  <span class="rating-item-label">Food Quality</span>
+                  <span class="rating-item-val">4 / 5</span>
+                </div>
+                <div class="star-picker" data-dimension="quality">
+                  <button type="button" class="star-btn active" data-value="1">★</button>
+                  <button type="button" class="star-btn active" data-value="2">★</button>
+                  <button type="button" class="star-btn active" data-value="3">★</button>
+                  <button type="button" class="star-btn active" data-value="4">★</button>
+                  <button type="button" class="star-btn" data-value="5">★</button>
+                </div>
+              </div>
+
+              <!-- Cleanliness -->
+              <div class="rating-item">
+                <div class="rating-item-header">
+                  <span class="rating-item-label">Food Cleanliness</span>
+                  <span class="rating-item-val">4 / 5</span>
+                </div>
+                <div class="star-picker" data-dimension="cleanliness">
+                  <button type="button" class="star-btn active" data-value="1">★</button>
+                  <button type="button" class="star-btn active" data-value="2">★</button>
+                  <button type="button" class="star-btn active" data-value="3">★</button>
+                  <button type="button" class="star-btn active" data-value="4">★</button>
+                  <button type="button" class="star-btn" data-value="5">★</button>
+                </div>
+              </div>
+
+              <!-- Utensil Hygiene -->
+              <div class="rating-item">
+                <div class="rating-item-header">
+                  <span class="rating-item-label">Utensil Hygiene</span>
+                  <span class="rating-item-val">4 / 5</span>
+                </div>
+                <div class="star-picker" data-dimension="utensilHygiene">
+                  <button type="button" class="star-btn active" data-value="1">★</button>
+                  <button type="button" class="star-btn active" data-value="2">★</button>
+                  <button type="button" class="star-btn active" data-value="3">★</button>
+                  <button type="button" class="star-btn active" data-value="4">★</button>
+                  <button type="button" class="star-btn" data-value="5">★</button>
+                </div>
+              </div>
+
+              <!-- Seating Cleanliness -->
+              <div class="rating-item">
+                <div class="rating-item-header">
+                  <span class="rating-item-label">Seating Cleanliness</span>
+                  <span class="rating-item-val">4 / 5</span>
+                </div>
+                <div class="star-picker" data-dimension="seatingCleanliness">
+                  <button type="button" class="star-btn active" data-value="1">★</button>
+                  <button type="button" class="star-btn active" data-value="2">★</button>
+                  <button type="button" class="star-btn active" data-value="3">★</button>
+                  <button type="button" class="star-btn active" data-value="4">★</button>
+                  <button type="button" class="star-btn" data-value="5">★</button>
+                </div>
+              </div>
+
+              <!-- Overall Experience -->
+              <div class="rating-item">
+                <div class="rating-item-header">
+                  <span class="rating-item-label">Overall Experience</span>
+                  <span class="rating-item-val">4 / 5</span>
+                </div>
+                <div class="star-picker" data-dimension="overall">
+                  <button type="button" class="star-btn active" data-value="1">★</button>
+                  <button type="button" class="star-btn active" data-value="2">★</button>
+                  <button type="button" class="star-btn active" data-value="3">★</button>
+                  <button type="button" class="star-btn active" data-value="4">★</button>
+                  <button type="button" class="star-btn" data-value="5">★</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Food Specific Issues Chips -->
+            <div class="chips-group-title">
+              <span>⚠️ Food Issues Encountered (Optional)</span>
+            </div>
+            <div class="selectable-chips">
+              <span class="issue-chip" data-issue="Cold food">Cold food</span>
+              <span class="issue-chip" data-issue="Bad taste">Bad taste</span>
+              <span class="issue-chip" data-issue="Less quantity">Less quantity</span>
+              <span class="issue-chip" data-issue="Hygiene issue">Hygiene issue</span>
+              <span class="issue-chip" data-issue="tortillas not cooked properly">Roti not cooked properly</span>
+              <span class="issue-chip" data-issue="rice not cooked properly">Rice not cooked properly</span>
+              <span class="issue-chip" data-issue="stale bread">Stale bread</span>
+              <span class="issue-chip" data-issue="vegetable not cooked properly">Vegetable not cooked</span>
+            </div>
+
+            <!-- Counter / Service Issues Chips -->
+            <div class="chips-group-title">
+              <span>🧑‍🍳 Counter & Staff Issues (Optional)</span>
+            </div>
+            <div class="selectable-chips">
+              <span class="counter-chip issue-chip" data-issue="Rude staff">Rude staff</span>
+              <span class="counter-chip issue-chip" data-issue="No gloves worn">No gloves worn</span>
+              <span class="counter-chip issue-chip" data-issue="Not serving on time">Not serving on time</span>
+            </div>
+
+            <button type="submit" id="submit-review-btn" class="btn btn-primary" style="width: 100%; margin-top: 1.5rem;">
+              Submit Feedback Review
+            </button>
+          </form>
+        </div>
+
+        <!-- Lodge Complaint Card -->
+        <div>
+          <div class="card">
+            <div class="card-header">
+              <h2 class="card-title">🚨 Lodge Incident / Complaint</h2>
+              <span class="badge badge-danger">Official Ticket</span>
+            </div>
+
+            <form id="complaint-form">
+              <div class="form-group">
+                <label for="complaint-meal" class="form-label">Meal Session</label>
+                <select id="complaint-meal" class="form-control" required>
+                  <option value="Breakfast">Breakfast</option>
+                  <option value="Lunch">Lunch</option>
+                  <option value="Dinner">Dinner</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="complaint-type" class="form-label">Complaint Category</label>
+                <select id="complaint-type" class="form-control" required>
+                  <option value="Foreign object in food">Foreign object in food (Insect/Pebble/Hair)</option>
+                  <option value="Food poisoning">Food poisoning / Sickness</option>
+                  <option value="Severe hygiene issue">Severe hygiene issue</option>
+                  <option value="Unsafe food handling">Unsafe food handling</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="complaint-description" class="form-label">Detailed Description</label>
+                <textarea id="complaint-description" class="form-control" rows="5" placeholder="Please describe the incident, counter location, or issue in detail..." required></textarea>
+              </div>
+
+              <button type="submit" id="submit-complaint-btn" class="btn btn-danger" style="width: 100%;">
+                Submit Official Complaint
+              </button>
+            </form>
+          </div>
+
+          <div class="card" style="background: var(--bg-surface-elevated); border-left: 4px solid var(--info);">
+            <h3 style="font-size: 0.95rem; font-weight: 700; margin-bottom: 0.4rem; color: var(--text-primary);">💡 Mess Guidelines</h3>
+            <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.5;">
+              Constructive ratings help the hostel mess committee monitor contractor food quality and maintain highest hygiene standards. Critical complaints are reviewed directly by Wardens and the Mess Administrator.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================================================================== -->
+    <!-- VIEW 3: WARDEN PORTAL -->
+    <!-- ==================================================================== -->
+    <section id="warden-view" class="hidden">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+        <div>
+          <h1 class="page-title">Warden Student Register</h1>
+          <p class="page-subtitle" style="margin-bottom: 0;">Manage student accounts, hostel mess allocations, and rosters.</p>
+        </div>
+        <button type="button" class="btn btn-primary" onclick="openModal('create-student-modal')">
+          <span>➕ Register New Student</span>
+        </button>
+      </div>
+
+      <!-- Quick Metrics Bar -->
+      <div class="stat-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); margin-bottom: 1.25rem;">
+        <div class="stat-card">
+          <div>
+            <div class="stat-label">Registered Students</div>
+            <div class="stat-value" id="warden-student-count">0</div>
+          </div>
+          <div class="stat-icon">🎓</div>
+        </div>
+      </div>
+
+      <!-- Students Table Card -->
+      <div class="card">
+        <div class="card-header">
+          <div style="display: flex; align-items: center; gap: 1rem; flex: 1; max-width: 450px;">
+            <input type="text" id="warden-search-input" class="form-control" placeholder="🔍 Search student by name, roll no, country...">
+          </div>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="fetchAndRenderStudents()">
+            🔄 Refresh List
+          </button>
+        </div>
+
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Roll No</th>
+                <th>Student Name</th>
+                <th>Hostel No</th>
+                <th>Country</th>
+                <th>Registered On</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="warden-students-tbody">
+              <!-- Dynamically rendered -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================================================================== -->
+    <!-- VIEW 4: ADMIN PORTAL -->
+    <!-- ==================================================================== -->
+    <section id="admin-view" class="hidden">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+        <div>
+          <h1 class="page-title">Executive Administration</h1>
+          <p class="page-subtitle" style="margin-bottom: 0;">System monitoring, warden supervision, and dining quality intelligence.</p>
+        </div>
+        <button type="button" class="btn btn-primary" onclick="openModal('create-warden-modal')">
+          <span>➕ Register Warden</span>
+        </button>
+      </div>
+
+      <!-- 4-Stat Metric Counter Grid -->
+      <div class="stat-grid">
+        <div class="stat-card">
+          <div>
+            <div class="stat-label">Hostel Wardens</div>
+            <div class="stat-value" id="admin-stat-wardens">0</div>
+          </div>
+          <div class="stat-icon">🛡</div>
+        </div>
+
+        <div class="stat-card">
+          <div>
+            <div class="stat-label">Reviews Received</div>
+            <div class="stat-value" id="admin-stat-reviews">0</div>
+          </div>
+          <div class="stat-icon icon-emerald">⭐</div>
+        </div>
+
+        <div class="stat-card">
+          <div>
+            <div class="stat-label">Complaints Logged</div>
+            <div class="stat-value" id="admin-stat-complaints">0</div>
+          </div>
+          <div class="stat-icon icon-coral">🚨</div>
+        </div>
+
+        <div class="stat-card">
+          <div>
+            <div class="stat-label">Satisfaction Index</div>
+            <div class="stat-value" id="admin-stat-score">4.2 ★</div>
+          </div>
+          <div class="stat-icon icon-amber">📈</div>
+        </div>
+      </div>
+
+      <!-- Admin Sub Navigation Tabs -->
+      <div class="admin-nav-tabs">
+        <button type="button" class="admin-tab-btn active" data-tab="analytics">
+          📊 Quality Analytics & Aggregates
+        </button>
+        <button type="button" class="admin-tab-btn" data-tab="wardens">
+          🛡 Warden Directory
+        </button>
+        <button type="button" class="admin-tab-btn" data-tab="complaints">
+          🚨 Student Complaints
+        </button>
+        <button type="button" class="admin-tab-btn" data-tab="reviews">
+          🍽 Feedback Reviews Explorer
+        </button>
+      </div>
+
+      <!-- SUBTAB 1: ANALYTICS -->
+      <div id="admin-subtab-analytics">
+        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem;">
+          <div>
+            <h2 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 1rem;">Day-wise Quality Breakdown</h2>
+            <div class="grid-analytics" id="analytics-days-grid">
+              <!-- Dynamically rendered day matrices -->
+            </div>
+          </div>
+
+          <div>
+            <h2 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 1rem;">Recent Session Trends</h2>
+            <div class="card" style="padding: 1rem;">
+              <div id="analytics-date-meal-list">
+                <!-- Dynamically rendered date-meal items -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SUBTAB 2: WARDENS DIRECTORY -->
+      <div id="admin-subtab-wardens" class="hidden">
+        <div class="card">
+          <div class="card-header">
+            <div style="display: flex; gap: 0.5rem; flex: 1; max-width: 380px;">
+              <input type="number" id="search-warden-hostel-input" class="form-control" placeholder="Search warden by Hostel No...">
+              <button type="button" class="btn btn-secondary btn-sm" id="search-warden-hostel-btn">Search</button>
+            </div>
+            <button type="button" class="btn btn-primary btn-sm" onclick="openModal('create-warden-modal')">
+              ➕ Add Warden
+            </button>
+          </div>
+
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Warden Name</th>
+                  <th>Email</th>
+                  <th>Hostel No</th>
+                  <th>Role</th>
+                  <th>Joined Date</th>
+                </tr>
+              </thead>
+              <tbody id="admin-wardens-tbody">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- SUBTAB 3: COMPLAINTS -->
+      <div id="admin-subtab-complaints" class="hidden">
+        <div id="admin-complaints-list">
+          <!-- Dynamically populated -->
+        </div>
+      </div>
+
+      <!-- SUBTAB 4: REVIEWS FEED -->
+      <div id="admin-subtab-reviews" class="hidden">
+        <div class="card" style="margin-bottom: 1.25rem;">
+          <div style="display: flex; gap: 1rem; flex-wrap: wrap; align-items: center;">
+            <div style="font-weight: 600; font-size: 0.9rem;">Filters:</div>
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+              <label for="admin-review-filter-day" style="font-size: 0.85rem; color: var(--text-secondary);">Day:</label>
+              <select id="admin-review-filter-day" class="form-control" style="width: auto;">
+                <option value="ALL">All Days</option>
+                <option value="Monday">Monday</option>
+                <option value="Tuesday">Tuesday</option>
+                <option value="Wednesday">Wednesday</option>
+                <option value="Thursday">Thursday</option>
+                <option value="Friday">Friday</option>
+                <option value="Saturday">Saturday</option>
+                <option value="Sunday">Sunday</option>
+              </select>
+            </div>
+
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+              <label for="admin-review-filter-meal" style="font-size: 0.85rem; color: var(--text-secondary);">Meal:</label>
+              <select id="admin-review-filter-meal" class="form-control" style="width: auto;">
+                <option value="ALL">All Meals</option>
+                <option value="Breakfast">Breakfast</option>
+                <option value="Lunch">Lunch</option>
+                <option value="Dinner">Dinner</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div id="admin-reviews-list">
+          <!-- Dynamically populated reviews -->
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ==================================================================== -->
+  <!-- MODAL DIALOGS -->
+  <!-- ==================================================================== -->
+
+  <!-- Modal: Create Student (Warden) -->
+  <div id="create-student-modal" class="modal-overlay hidden">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3 class="modal-title">Register New Student</h3>
+        <button type="button" class="btn-icon" onclick="closeModal('create-student-modal')">✕</button>
+      </div>
+      <form id="create-student-form">
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label" for="create-student-name">Full Name</label>
+            <input type="text" id="create-student-name" class="form-control" placeholder="e.g. John Doe" required>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div class="form-group">
+              <label class="form-label" for="create-student-roll">Roll Number</label>
+              <input type="number" id="create-student-roll" class="form-control" placeholder="e.g. 105" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="create-student-hostel">Hostel Number</label>
+              <input type="number" id="create-student-hostel" class="form-control" placeholder="e.g. 1" required>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="create-student-country">Country</label>
+            <input type="text" id="create-student-country" class="form-control" placeholder="e.g. India" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="create-student-password">Initial Password</label>
+            <input type="password" id="create-student-password" class="form-control" placeholder="••••••••" required>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('create-student-modal')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Register Student</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Edit Student (Warden) -->
+  <div id="edit-student-modal" class="modal-overlay hidden">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3 class="modal-title">Edit Student Details</h3>
+        <button type="button" class="btn-icon" onclick="closeModal('edit-student-modal')">✕</button>
+      </div>
+      <form id="edit-student-form">
+        <div class="modal-body">
+          <input type="hidden" id="edit-student-roll">
+          <div class="form-group">
+            <label class="form-label" for="edit-student-name">Full Name</label>
+            <input type="text" id="edit-student-name" class="form-control" required>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div class="form-group">
+              <label class="form-label" for="edit-student-hostel">Hostel Number</label>
+              <input type="number" id="edit-student-hostel" class="form-control" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="edit-student-country">Country</label>
+              <input type="text" id="edit-student-country" class="form-control" required>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('edit-student-modal')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Delete Student Confirmation -->
+  <div id="delete-student-modal" class="modal-overlay hidden">
+    <div class="modal-dialog" style="max-width: 420px;">
+      <div class="modal-header">
+        <h3 class="modal-title" style="color: var(--danger);">Confirm Deletion</h3>
+        <button type="button" class="btn-icon" onclick="closeModal('delete-student-modal')">✕</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="delete-student-roll-target">
+        <p style="font-size: 0.95rem; color: var(--text-primary); margin-bottom: 0.5rem;">
+          Are you sure you want to remove <strong id="delete-student-name-display">Student</strong> from the hostel mess database?
+        </p>
+        <p style="font-size: 0.85rem; color: var(--danger-text);">
+          This action will permanently delete their account credentials.
+        </p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeModal('delete-student-modal')">Cancel</button>
+        <button type="button" id="confirm-delete-student-btn" class="btn btn-danger">Delete Student</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Create Warden (Admin) -->
+  <div id="create-warden-modal" class="modal-overlay hidden">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3 class="modal-title">Register New Warden</h3>
+        <button type="button" class="btn-icon" onclick="closeModal('create-warden-modal')">✕</button>
+      </div>
+      <form id="create-warden-form">
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label" for="create-warden-name">Warden Full Name</label>
+            <input type="text" id="create-warden-name" class="form-control" placeholder="e.g. Dr. Suresh Verma" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="create-warden-email">Official Email</label>
+            <input type="email" id="create-warden-email" class="form-control" placeholder="e.g. warden.h3@hostel.edu" required>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div class="form-group">
+              <label class="form-label" for="create-warden-hostel">Assigned Hostel No</label>
+              <input type="number" id="create-warden-hostel" class="form-control" placeholder="e.g. 3" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="create-warden-password">Password</label>
+              <input type="password" id="create-warden-password" class="form-control" placeholder="••••••••" required>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('create-warden-modal')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Create Warden</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container" class="toast-container" aria-live="polite"></div>
+
+  <!-- Scripts -->
+  <script src="js/api.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
